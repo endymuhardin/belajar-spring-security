@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans:beans xmlns="http://www.springframework.org/schema/security"
-	xmlns:beans="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-3.0.xsd
            http://www.springframework.org/schema/security
            http://www.springframework.org/schema/security/spring-security-3.1.xsd">
+
+	<context:property-placeholder location="classpath:config.properties"/>
 
 	<http auto-config="true" entry-point-ref="casEntryPoint">
 		<custom-filter ref="requestSingleLogoutFilter" before="LOGOUT_FILTER" />
@@ -27,14 +33,14 @@
 	<beans:bean id="casEntryPoint"
 		class="org.springframework.security.cas.web.CasAuthenticationEntryPoint">
 		<beans:property name="loginUrl"
-			value="http://10.20.3.104:8080/cas/login" />
+			value="${cas.server}/login" />
 		<beans:property name="serviceProperties" ref="serviceProperties" />
 	</beans:bean>
 
 	<beans:bean id="serviceProperties"
 		class="org.springframework.security.cas.ServiceProperties">
 		<beans:property name="service"
-			value="http://localhost:8080/belajar-spring-security/j_spring_cas_security_check" />
+			value="${aplikasi.sendiri}/j_spring_cas_security_check" />
 		<beans:property name="sendRenew" value="false" />
 	</beans:bean>
 
@@ -51,7 +57,7 @@
 			<beans:bean
 				class="org.jasig.cas.client.validation.Cas20ServiceTicketValidator">
 				<beans:constructor-arg index="0"
-					value="http://10.20.3.104:8080/cas/" />
+					value="${cas.server}/" />
 			</beans:bean>
 		</beans:property>
 		<beans:property name="key" value="an_id_for_this_auth_provider_only" />
@@ -59,7 +65,7 @@
 
 	<beans:bean id="singleLogoutFilter" class="org.jasig.cas.client.session.SingleSignOutFilter" />
 	<beans:bean id="requestSingleLogoutFilter" class="org.springframework.security.web.authentication.logout.LogoutFilter">
-		<beans:constructor-arg value="http://10.20.3.104:8080/cas/logout" />
+		<beans:constructor-arg value="${cas.server}/logout" />
 		<beans:constructor-arg>
 			<beans:bean
 				class="org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler" />
