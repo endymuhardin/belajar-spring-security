@@ -1,59 +1,75 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans:beans xmlns="http://www.springframework.org/schema/security"
-             xmlns:beans="http://www.springframework.org/schema/beans"
-             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xsi:schemaLocation="http://www.springframework.org/schema/beans
+	xmlns:beans="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
            http://www.springframework.org/schema/security
            http://www.springframework.org/schema/security/spring-security-3.1.xsd">
 
-    <http auto-config="true" entry-point-ref="casEntryPoint">
-    	<custom-filter position="CAS_FILTER" ref="casFilter" />
-        <intercept-url pattern="/secured/admin/**" access="ROLE_ADMIN" />
-        <intercept-url pattern="/secured/**" access="ROLE_USER" />
-    </http>
-    
-    <beans:bean id="casFilter"
-                class="org.springframework.security.cas.web.CasAuthenticationFilter">
-        <beans:property name="authenticationManager" ref="authenticationManager"/>
-    </beans:bean>
-    
-    <authentication-manager alias="authenticationManager">
-        <!-- <authentication-provider user-service-ref="userServiceInMemory" />  -->
-        <authentication-provider ref="casAuthenticationProvider"/>
-    </authentication-manager>
+	<http auto-config="true" entry-point-ref="casEntryPoint">
+		<custom-filter ref="requestSingleLogoutFilter" before="LOGOUT_FILTER" />
+		<custom-filter ref="singleLogoutFilter" before="CAS_FILTER" />
+		<custom-filter position="CAS_FILTER" ref="casFilter" />
+		<intercept-url pattern="/secured/admin/**" access="ROLE_ADMIN" />
+		<intercept-url pattern="/secured/**" access="ROLE_USER" />
+	</http>
 
-    <beans:bean id="casEntryPoint"
-                class="org.springframework.security.cas.web.CasAuthenticationEntryPoint">
-        <beans:property name="loginUrl" value="http://10.20.3.104:8080/cas/login"/>
-        <beans:property name="serviceProperties" ref="serviceProperties"/>
-    </beans:bean>
-    
-    <beans:bean id="serviceProperties" class="org.springframework.security.cas.ServiceProperties">
-        <beans:property name="service" value="http://localhost:8080/belajar-spring-security/j_spring_cas_security_check"/>
-        <beans:property name="sendRenew" value="false"/>
-    </beans:bean>
-    
-    <beans:bean id="casAuthenticationProvider" class="org.springframework.security.cas.authentication.CasAuthenticationProvider">
-        <beans:property name="authenticationUserDetailsService">
-            <beans:bean class="org.springframework.security.core.userdetails.UserDetailsByNameServiceWrapper">
-                <beans:constructor-arg ref="userServiceInMemory" />
-            </beans:bean>
-        </beans:property>
-        <beans:property name="serviceProperties" ref="serviceProperties" />
-        <beans:property name="ticketValidator">
-            <beans:bean class="org.jasig.cas.client.validation.Cas20ServiceTicketValidator">
-                <beans:constructor-arg index="0" value="http://10.20.3.104:8080/cas/" />
-            </beans:bean>
-        </beans:property>
-        <beans:property name="key" value="an_id_for_this_auth_provider_only"/>
-    </beans:bean>
-           
-    
-    
-    <user-service id="userServiceInMemory">
-        <user name="endy" password="123" authorities="ROLE_USER, ROLE_ADMIN" />
-        <user name="bob" password="123" authorities="ROLE_USER" />
-    </user-service>
+	<beans:bean id="casFilter"
+		class="org.springframework.security.cas.web.CasAuthenticationFilter">
+		<beans:property name="authenticationManager" ref="authenticationManager" />
+	</beans:bean>
+
+	<authentication-manager alias="authenticationManager">
+		<!-- <authentication-provider user-service-ref="userServiceInMemory" /> -->
+		<authentication-provider ref="casAuthenticationProvider" />
+	</authentication-manager>
+
+	<beans:bean id="casEntryPoint"
+		class="org.springframework.security.cas.web.CasAuthenticationEntryPoint">
+		<beans:property name="loginUrl"
+			value="http://10.20.3.104:8080/cas/login" />
+		<beans:property name="serviceProperties" ref="serviceProperties" />
+	</beans:bean>
+
+	<beans:bean id="serviceProperties"
+		class="org.springframework.security.cas.ServiceProperties">
+		<beans:property name="service"
+			value="http://localhost:8080/belajar-spring-security/j_spring_cas_security_check" />
+		<beans:property name="sendRenew" value="false" />
+	</beans:bean>
+
+	<beans:bean id="casAuthenticationProvider"
+		class="org.springframework.security.cas.authentication.CasAuthenticationProvider">
+		<beans:property name="authenticationUserDetailsService">
+			<beans:bean
+				class="org.springframework.security.core.userdetails.UserDetailsByNameServiceWrapper">
+				<beans:constructor-arg ref="userServiceInMemory" />
+			</beans:bean>
+		</beans:property>
+		<beans:property name="serviceProperties" ref="serviceProperties" />
+		<beans:property name="ticketValidator">
+			<beans:bean
+				class="org.jasig.cas.client.validation.Cas20ServiceTicketValidator">
+				<beans:constructor-arg index="0"
+					value="http://10.20.3.104:8080/cas/" />
+			</beans:bean>
+		</beans:property>
+		<beans:property name="key" value="an_id_for_this_auth_provider_only" />
+	</beans:bean>
+
+	<beans:bean id="singleLogoutFilter" class="org.jasig.cas.client.session.SingleSignOutFilter" />
+	<beans:bean id="requestSingleLogoutFilter" class="org.springframework.security.web.authentication.logout.LogoutFilter">
+		<beans:constructor-arg value="http://10.20.3.104:8080/cas/logout" />
+		<beans:constructor-arg>
+			<beans:bean
+				class="org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler" />
+		</beans:constructor-arg>
+		<beans:property name="filterProcessesUrl" value="/j_spring_cas_security_logout" />
+	</beans:bean>
+
+	<user-service id="userServiceInMemory">
+		<user name="endy" password="123" authorities="ROLE_USER, ROLE_ADMIN" />
+		<user name="bob" password="123" authorities="ROLE_USER" />
+	</user-service>
 
 </beans:beans>
